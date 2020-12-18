@@ -95,19 +95,6 @@ void set_preset(bool preset[9][9], const int8_t sodoku[9][9]) {
 
 // Iterative implementation
 
-void backtrack(int8_t sodoku[9][9], const bool preset[9][9], int* i, int* j) {
-    if (!preset[*i][*j])
-        sodoku[*i][*j] = 0;
-
-    // Because j will be incremented when the loop ends, it is decremented by 2
-    if (*j == 0) {
-        *i -= 1;
-        *j = 7;
-    } else {
-        *j -= 2;
-    }
-}
-
 void solve_it(int8_t sodoku[9][9]) {
     bool preset[9][9];
     set_preset(preset, sodoku);
@@ -115,27 +102,31 @@ void solve_it(int8_t sodoku[9][9]) {
     bool backtracking = false;
     for (int i = 0; i < 9; ++i) {
         for (int j = 0; j < 9; ++j) {
-            if (preset[i][j]) {
-                if (backtracking)
-                    backtrack(sodoku, preset, &i, &j);
-                continue;
-            }
+            if (!preset[i][j]) {
+                int8_t prevP = sodoku[i][j];
+                for (int8_t p = prevP + 1; p < 10; ++p) {
+                    if (can_place(sodoku, i, j, p)) {
+                        sodoku[i][j] = p;
+                        break;
+                    }
+                }
 
-            int8_t prevP = sodoku[i][j];
-            for (int8_t p = prevP + 1; p < 10; ++p) {
-                if (can_place(sodoku, i, j, p)) {
-                    sodoku[i][j] = p;
-                    break;
+                if (sodoku[i][j] == prevP) {
+                    backtracking = true;
+                    sodoku[i][j] = 0;
+                } else {
+                    backtracking = false;
                 }
             }
 
-            if (sodoku[i][j] == prevP) {
-                backtracking = true;
-                backtrack(sodoku, preset, &i, &j);
-            } else {
-                backtracking = false;
+            if (backtracking) {
+                if (j == 0) {
+                    i -= 1;
+                    j = 7;
+                } else
+                    j -= 2; // Because j will be incremented when the loop ends, it is decremented by 2
             }
-         }
+        }
     }
 
 }
