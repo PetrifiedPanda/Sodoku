@@ -5,7 +5,7 @@
 
 void print(const int8_t sodoku[9][9]);
 void solve_it(int8_t sodoku[9][9]);
-void solve_rec(int8_t sodoku[9][9]);
+bool solve_rec(int8_t sodoku[9][9]);
 
 int main() {
     int8_t sodoku[9][9] = {
@@ -21,7 +21,7 @@ int main() {
     };
     
     print(sodoku);
-    solve_it(sodoku);
+    solve_rec(sodoku);
     print(sodoku);
     return 0;
 }
@@ -52,7 +52,7 @@ void print(const int8_t sodoku[9][9]) {
     printf("\n");
 }
 
-// Helper functions used by both implementations
+// Helper function used by both implementations
 
 bool can_place(const int8_t sodoku[9][9], int row, int column, int8_t placement) {
     // Check if number already in row
@@ -87,13 +87,51 @@ bool can_place(const int8_t sodoku[9][9], int row, int column, int8_t placement)
     return true;
 }
 
+// Recursive Implementation
+
+void find_empty(const int8_t sodoku[9][9], int* res_i, int* res_j) {
+    for (int i = 0; i < 9; ++i) {
+        for (int j = 0; j < 9; ++j) {
+            if (sodoku[i][j] == 0) {
+                *res_i = i;
+                *res_j = j;
+                return;
+            }
+        }
+    }
+    *res_i = -1;
+    *res_j = -1;
+}
+
+bool solve_rec(int8_t sodoku[9][9]) {
+    int i, j;
+
+    find_empty(sodoku, &i, &j);
+
+    if (i == -1)
+        return true;
+
+    for (int k = 1; k < 10; ++k) {
+        if (can_place(sodoku, i, j, k)) {
+            sodoku[i][j] = k;
+
+            if (solve_rec(sodoku))
+                return true;
+            
+            sodoku[i][j] = 0;
+        }
+    }
+
+    return false;
+} 
+
+// Iterative implementation
+
 void set_preset(bool preset[9][9], const int8_t sodoku[9][9]) {
     for (int i = 0; i < 9; ++i)
         for (int j = 0; j < 9; ++j)
             preset[i][j] = sodoku[i][j] != 0;
 }
-
-// Iterative implementation
 
 void solve_it(int8_t sodoku[9][9]) {
     bool preset[9][9];
@@ -129,46 +167,4 @@ void solve_it(int8_t sodoku[9][9]) {
         }
     }
 
-}
-
-// Recursive Implementation
-
-void solve_rec_impl(int8_t sodoku[9][9], const bool preset[9][9], int i, int j, bool backtracking) {
-    if (i < 9 && j < 9) {
-        if (!preset[i][j]) {
-            int8_t prevVal = sodoku[i][j];
-            for (int k = prevVal + 1; k < 10; ++k) {
-                if (can_place(sodoku, i, j, k)) {
-                    sodoku[i][j] = k;
-                    break;
-                }
-            }
-
-            if (sodoku[i][j] == prevVal) {
-                sodoku[i][j] = 0;
-                backtracking = true;
-            }
-            else {
-                backtracking = false;
-            }
-        }
-
-        if (backtracking) {
-            if (j == 0)
-                solve_rec_impl(sodoku, preset, i - 1, 8, true);
-            else
-                solve_rec_impl(sodoku, preset, i, j - 1, true);
-        } else {
-            if (j == 8)
-                solve_rec_impl(sodoku, preset, i + 1, 0, false);
-            else
-                solve_rec_impl(sodoku, preset, i, j + 1, false);
-        }
-    }
-}
-
-void solve_rec(int8_t sodoku[9][9]) {
-    bool preset[9][9];
-    set_preset(preset, sodoku);
-    solve_rec_impl(sodoku, preset, 0, 0, false);
 }
