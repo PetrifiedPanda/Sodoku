@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 3.10.2)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 99)
 
-set(This SodokuSolver)
+set(This SudokuSolver)
 
 project(${This})
 
 set(Sources
-    sodoku.c
+    sudoku.c
 )
 
 add_executable(${This} ${Sources})
